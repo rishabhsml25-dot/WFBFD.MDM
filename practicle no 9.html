@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Personal To-Do List</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- Main Container -->
+    <div class="max-w-md mx-auto mt-10 bg-white p-6 rounded-lg shadow-lg">
+
+        <!-- Heading -->
+        <h1 class="text-2xl font-bold text-center mb-2">
+            Personal To-Do List
+        </h1>
+
+        <p class="text-center text-gray-500 mb-5">
+            Manage your daily tasks
+        </p>
+
+        <!-- Input and Add Button -->
+        <div class="flex gap-2 mb-5">
+
+            <input
+                type="text"
+                id="taskInput"
+                placeholder="Enter your task"
+                class="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none"
+            >
+
+            <button
+                id="addBtn"
+                class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+            >
+                Add Task
+            </button>
+
+        </div>
+
+        <!-- Task Count -->
+        <p class="text-gray-600 mb-3">
+            Total Tasks: <span id="taskCount">0</span>
+        </p>
+
+        <!-- Task List -->
+        <ul id="taskList" class="space-y-2">
+        </ul>
+
+    </div>
+
+
+    <script>
+
+        // Get HTML elements
+        const taskInput = document.getElementById("taskInput");
+        const addBtn = document.getElementById("addBtn");
+        const taskList = document.getElementById("taskList");
+        const taskCount = document.getElementById("taskCount");
+
+
+        // Add Task
+        addBtn.addEventListener("click", function () {
+
+            const taskText = taskInput.value.trim();
+
+            // Check empty input
+            if (taskText === "") {
+                alert("Please enter a task!");
+                return;
+            }
+
+
+            // Create new list item
+            const li = document.createElement("li");
+
+            li.className =
+                "flex items-center justify-between bg-gray-100 p-3 rounded";
+
+
+            // Create task text
+            const span = document.createElement("span");
+
+            span.innerText = taskText;
+
+            span.className = "cursor-pointer";
+
+
+            // Mark task as completed
+            span.addEventListener("click", function () {
+
+                span.classList.toggle("line-through");
+                span.classList.toggle("text-gray-400");
+
+            });
+
+
+            // Create Delete button
+            const deleteBtn = document.createElement("button");
+
+            deleteBtn.innerText = "Delete";
+
+            deleteBtn.className =
+                "bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600";
+
+
+            // Delete task
+            deleteBtn.addEventListener("click", function () {
+
+                li.remove();
+
+                updateCount();
+
+            });
+
+
+            // Add task text and button to li
+            li.appendChild(span);
+            li.appendChild(deleteBtn);
+
+
+            // Add li to task list
+            taskList.appendChild(li);
+
+
+            // Clear input
+            taskInput.value = "";
+
+
+            // Update count
+            updateCount();
+
+        });
+
+
+        // Function to update task count
+        function updateCount() {
+
+            taskCount.innerText = taskList.children.length;
+
+        }
+
+    </script>
+
+</body>
+</html>
+```
