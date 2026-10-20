@@ -1,0 +1,272 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Planner CM25046</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen text-gray-800">
+
+    <header class="bg-indigo-600 text-white p-5">
+        <div class="max-w-3xl mx-auto">
+            <h1 class="text-2xl font-bold">Study Planner</h1>
+            <p class="text-sm mt-1">Plan your tasks date-wise</p>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto p-4 sm:p-6">
+
+        <!-- Add Task -->
+        <section class="bg-white rounded-xl shadow p-5 mb-5">
+            <h2 class="text-xl font-semibold mb-4">Add Study Task</h2>
+
+            <form id="taskForm" class="space-y-4">
+
+                <div>
+                    <label for="taskInput" class="block mb-2 font-medium">
+                        Task Name
+                    </label>
+                    <input
+                        id="taskInput"
+                        type="text"
+                        placeholder="e.g. Complete Java practical"
+                        class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+                        required
+                    >
+                </div>
+
+                <div>
+                    <label for="taskDate" class="block mb-2 font-medium">
+                        Select Date
+                    </label>
+                    <input
+                        id="taskDate"
+                        type="date"
+                        class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+                        required
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700"
+                >
+                    Add Task
+                </button>
+            </form>
+        </section>
+
+        <!-- Today's Date -->
+        <section class="bg-white rounded-xl shadow p-5 mb-5">
+            <p class="text-gray-500 text-sm">Today's Date</p>
+            <h2 id="todayDate" class="text-lg font-bold text-indigo-600"></h2>
+        </section>
+
+        <!-- Statistics -->
+        <section class="grid grid-cols-2 gap-4 mb-5">
+            <div class="bg-white rounded-xl shadow p-5">
+                <p class="text-gray-500 text-sm">Total Tasks</p>
+                <p id="totalTasks" class="text-3xl font-bold text-indigo-600">0</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-5">
+                <p class="text-gray-500 text-sm">Completed</p>
+                <p id="completedTasks" class="text-3xl font-bold text-green-600">0</p>
+            </div>
+        </section>
+
+        <!-- Task List -->
+        <section class="bg-white rounded-xl shadow p-5">
+            <h2 class="text-xl font-semibold mb-4">My Tasks</h2>
+
+            <ul id="taskList" class="space-y-3"></ul>
+
+            <p id="emptyMessage" class="text-center text-gray-500 py-6">
+                No tasks added yet.
+            </p>
+        </section>
+
+        <p class="text-center text-gray-500 text-sm mt-6">
+            Study Planner | HTML, Tailwind CSS and JavaScript
+        </p>
+
+    </main>
+
+    <script>
+        const taskForm = document.getElementById("taskForm");
+        const taskInput = document.getElementById("taskInput");
+        const taskDate = document.getElementById("taskDate");
+        const taskList = document.getElementById("taskList");
+        const totalTasks = document.getElementById("totalTasks");
+        const completedTasks = document.getElementById("completedTasks");
+        const emptyMessage = document.getElementById("emptyMessage");
+
+        // Get today's local date
+        function getToday() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, "0");
+            const day = String(now.getDate()).padStart(2, "0");
+
+            return `${year}-${month}-${day}`;
+        }
+
+        const today = getToday();
+
+        // Set default date
+        taskDate.value = today;
+
+        // Show today's date
+        document.getElementById("todayDate").textContent =
+            new Date(today + "T00:00:00").toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+            });
+
+        // Load saved tasks
+        let tasks = [];
+
+        try {
+            tasks = JSON.parse(localStorage.getItem("studyTasks")) || [];
+            if (!Array.isArray(tasks)) tasks = [];
+        } catch (error) {
+            tasks = [];
+        }
+
+        // Save tasks
+        function saveTasks() {
+            localStorage.setItem("studyTasks", JSON.stringify(tasks));
+        }
+
+        // Format date
+        function formatDate(date) {
+            return new Date(date + "T00:00:00").toLocaleDateString(
+                "en-IN",
+                {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric"
+                }
+            );
+        }
+
+        // Display tasks
+        function displayTasks() {
+            taskList.innerHTML = "";
+
+            totalTasks.textContent = tasks.length;
+            completedTasks.textContent =
+                tasks.filter(task => task.completed).length;
+
+            emptyMessage.style.display =
+                tasks.length === 0 ? "block" : "none";
+
+            // Sort by date
+            const sortedTasks = [...tasks].sort((a, b) =>
+                a.date.localeCompare(b.date)
+            );
+
+            sortedTasks.forEach(task => {
+                const li = document.createElement("li");
+
+                li.className =
+                    "flex items-start gap-3 border rounded-lg p-3";
+
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.checked = task.completed;
+                checkbox.className = "w-5 h-5 mt-1 accent-indigo-600";
+
+                const details = document.createElement("div");
+                details.className = "flex-1 min-w-0";
+
+                const name = document.createElement("p");
+                name.textContent = task.name;
+                name.className = "font-medium break-words";
+
+                if (task.completed) {
+                    name.classList.add("line-through", "text-gray-400");
+                }
+
+                const date = document.createElement("p");
+                date.textContent = "Date: " + formatDate(task.date);
+                date.className = "text-sm text-gray-500 mt-1";
+
+                // Show date status
+                const status = document.createElement("p");
+                status.className = "text-xs mt-1 font-medium";
+
+                if (task.completed) {
+                    status.textContent = "Completed";
+                    status.classList.add("text-green-600");
+                } else if (task.date < today) {
+                    status.textContent = "Overdue";
+                    status.classList.add("text-red-600");
+                } else if (task.date === today) {
+                    status.textContent = "Due Today";
+                    status.classList.add("text-orange-600");
+                } else {
+                    status.textContent = "Upcoming";
+                    status.classList.add("text-indigo-600");
+                }
+
+                checkbox.addEventListener("change", () => {
+                    task.completed = checkbox.checked;
+                    saveTasks();
+                    displayTasks();
+                });
+
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete";
+                deleteButton.className =
+                    "text-red-600 hover:text-red-800 text-sm font-medium";
+
+                deleteButton.addEventListener("click", () => {
+                    tasks = tasks.filter(item => item.id !== task.id);
+                    saveTasks();
+                    displayTasks();
+                });
+
+                details.append(name, date, status);
+                li.append(checkbox, details, deleteButton);
+                taskList.appendChild(li);
+            });
+        }
+
+        // Add task
+        taskForm.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const name = taskInput.value.trim();
+            const date = taskDate.value;
+
+            if (!name || !date) {
+                alert("Please enter task name and date.");
+                return;
+            }
+
+            tasks.push({
+                id: Date.now() + Math.random(),
+                name: name,
+                date: date,
+                completed: false
+            });
+
+            saveTasks();
+            displayTasks();
+
+            taskInput.value = "";
+            taskDate.value = today;
+            taskInput.focus();
+        });
+
+        // Initial display
+        displayTasks();
+    </script>
+
+</body>
+</html>
